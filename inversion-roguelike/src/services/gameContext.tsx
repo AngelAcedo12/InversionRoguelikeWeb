@@ -1,16 +1,15 @@
 "use client";
+import { KeyBindsController } from "@/core/controllers/KeyBindsController";
+import { TimeController } from "@/core/controllers/TimeController";
 import { usePlayer } from "@/hooks/usePlayer";
-import { useTime } from "@/hooks/useTime";
-import { createContext, useContext, useMemo } from "react";
+import { createContext, useContext, useEffect, useMemo } from "react";
 
-interface ContextInterface {
+interface GameContextInterface {
   player: ReturnType<typeof usePlayer>;
-  time: ReturnType<typeof useTime>;
 }
 
-const GameContext = createContext<ContextInterface>({
-  player: null as unknown as ReturnType<typeof usePlayer>,
-  time: null as unknown as ReturnType<typeof useTime>,
+const GameContext = createContext<GameContextInterface>({
+  player: {} as unknown as ReturnType<typeof usePlayer>,
 });
 
 export function GameContextProvider({
@@ -19,11 +18,18 @@ export function GameContextProvider({
   children: React.ReactNode;
 }) {
   const player = usePlayer();
-  const time = useTime();
+  const timeController = TimeController.getInstance();
+
+  useEffect(() => {
+    console.log("GameContextProvider");
+    timeController.start();
+    KeyBindsController.bindKeys();
+  }, []);
+
   const memo = useMemo(() => {
     return {
       player,
-      time,
+      timeController,
     };
   }, [player]);
 
