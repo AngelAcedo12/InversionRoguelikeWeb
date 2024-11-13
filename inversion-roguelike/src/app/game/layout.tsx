@@ -1,4 +1,5 @@
 "use client";
+import ClickInitGame from "@/components/clickInitGame";
 import { GameContextProvider } from "@/services/gameContext";
 import React from "react";
 

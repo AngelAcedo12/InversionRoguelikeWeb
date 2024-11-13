@@ -19,3 +19,21 @@ body {
   background: var(--background);
   font-family: Arial, Helvetica, sans-serif;
 }
+
+@keyframes draw {
+  from {
+    stroke-dasharray: 0, 1000;
+  }
+  to {
+    stroke-dasharray: 1000, 0;
+  }
+}
+
+polyline {
+  animation: draw 2s linear forwards;
+}
+polyline {
+  stroke: var(--foreground);
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
