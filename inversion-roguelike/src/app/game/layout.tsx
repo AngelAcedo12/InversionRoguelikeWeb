@@ -11,6 +11,7 @@ export default function GameLayout({
   return (
     <GameContextProvider>
       <section>{children}</section>
+      {/* <ClickInitGame />  */}
     </GameContextProvider>
   );
 }

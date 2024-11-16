@@ -7,9 +7,9 @@ export class TimeController {
   private timeSpeed: number = 1000;
   public static fastFoward = false;
   private interval: NodeJS.Timeout | null = null;
-  private day = 1;
-  private month = 0;
-  private year = 0;
+  public day = 1;
+  public month = 0;
+  public year = 0;
 
   private constructor() {
     this.timeSpeed = 1000;
@@ -29,12 +29,13 @@ export class TimeController {
   start() {
     this.interval = setInterval(() => {
       console.log(this.day);
+
       this.update();
     }, this.timeSpeed);
 
     // Asegúrate de que solo se llame en el cliente
     if (typeof window !== "undefined") {
-      MusicController.getInstance().playRandomMusic();  // Usando el singleton de MusicController
+      MusicController.getInstance().playRandomMusic(); // Usando el singleton de MusicController
     }
   }
 
@@ -47,12 +48,12 @@ export class TimeController {
       console.log(instance.day);
       instance.update();
     }, 500);
-    
+
     // Asegúrate de que solo se llame en el cliente
     if (typeof window !== "undefined") {
       MusicController.getInstance().playFastFowardMusic(); // Usando el singleton de MusicController
     }
-    
+
     TimeController.fastFoward = true;
   }
 

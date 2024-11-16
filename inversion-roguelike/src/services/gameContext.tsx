@@ -22,7 +22,8 @@ export function GameContextProvider({
 }) {
   const player = usePlayer();
   const timeController = TimeController.getInstance();
-
+  // const musicController = MusicController.getInstance()
+  const configController = MusicController.getInstance();
   const startGame = (() => {
     let executed = false;
 

@@ -1,11 +1,10 @@
+import { ConfigController } from "./ConfigController";
 import { TimeController } from "./TimeController";
 
 export class MusicController {
   public static instance: MusicController;
   private static isInit = false;
-  private audioContext: AudioContext | null = null;
-  private audioBuffer: AudioBuffer | null = null;
-  private sourceNode: AudioBufferSourceNode | null = null;
+  private audioElement: HTMLAudioElement | null = null;
   public musicOn: boolean = true;
   private static path = "/music/";
   private static musicList: string[] = [
@@ -16,13 +15,24 @@ export class MusicController {
 
   private constructor() {
     MusicController.instance = this;
-    this.initAudioContext();
+    this.initAudioElement();
   }
 
-  private initAudioContext() {
-    if (typeof window === "undefined") return; // Ejecutar solo en el navegador
-    this.audioContext = new (window.AudioContext ||
-      (window as any).webkitAudioContext)();
+  private initAudioElement() {
+    try {
+      console.log("Creando elemento de audio");
+      if (typeof window === "undefined") return; // Ejecutar solo en el navegador
+      this.audioElement = new Audio();
+      this.audioElement.volume =
+        ConfigController.getInstance().getMusicVolume();
+      console.log(this.audioElement.volume);
+      this.audioElement = new Audio();
+    } catch (error) {
+      console.error("Error al crear el elemento de audio:", error);
+      this.initAudioElement();
+    } finally {
+      this.audioElement = null;
+    } // Si no se puede crear el elemento de audio, se asigna null
   }
 
   public static getInstance() {
@@ -58,45 +68,22 @@ export class MusicController {
     this.playMusic("fastfoward.mp3");
   }
 
-  public async playMusic(src: string) {
+  public playMusic(src: string) {
     const instance = MusicController.getInstance();
     const audioUrl = `${MusicController.path}${src}`;
 
-    if (instance?.audioContext) {
-      try {
-        // Stop any currently playing music
-        if (instance.sourceNode) {
-          instance.stopMusic();
-        }
-        if (instance.audioContext.state === "suspended") {
-          await instance.audioContext.resume();
-        }
-        if (instance.audioContext.state === "closed") {
-          instance.initAudioContext();
-        }
+    if (instance?.audioElement) {
+      instance.audioElement.src = audioUrl;
+      instance.audioElement
+        .play()
+        .then(() => {
+          console.log("Reproduciendo música:", src);
+        })
+        .catch((error) => {
+          console.error("Error al reproducir música:", error);
+        });
 
-        const response = await fetch(audioUrl);
-        const arrayBuffer = await response.arrayBuffer();
-        console.log("Reproduciendo música:", src);
-        console.log("ArrayBuffer:", arrayBuffer);
-        instance.audioBuffer = await instance.audioContext.decodeAudioData(
-          arrayBuffer
-        );
-        console.log(MusicController.instance.audioContext);
-        instance.playBuffer();
-      } catch (error) {
-        console.error("Error al reproducir música:", error);
-      }
-    }
-  }
-
-  private playBuffer() {
-    if (this.audioContext && this.audioBuffer) {
-      this.sourceNode = this.audioContext.createBufferSource();
-      this.sourceNode.buffer = this.audioBuffer;
-      this.sourceNode.connect(this.audioContext.destination);
-      this.sourceNode.start(0);
-      this.sourceNode.onended = () => {
+      instance.audioElement.onended = () => {
         if (TimeController.fastFoward) {
           MusicController.getInstance().playFastFowardMusic();
         } else {
@@ -105,11 +92,16 @@ export class MusicController {
       };
     }
   }
+  public setVolume(volume: number) {
+    if (this.audioElement) {
+      this.audioElement.volume = volume;
+    }
+  }
 
   public stopMusic() {
-    if (this.sourceNode) {
-      this.sourceNode.stop();
-      this.sourceNode.disconnect();
+    if (this.audioElement) {
+      this.audioElement.pause();
+      this.audioElement.currentTime = 0;
     }
   }
 
